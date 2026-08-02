@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import {
   Camera,
@@ -16,6 +16,7 @@ import {
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import services from "@/data/services.json";
 import { cn } from "@/lib/utils";
+import { isTouchDevice } from "@/lib/device";
 
 const iconMap: Record<string, LucideIcon> = {
   Camera,
@@ -40,9 +41,11 @@ function ServiceCard({
   preview: string;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(false);
   const Icon = iconMap[icon] ?? Sparkles;
 
   const onMove = (e: React.MouseEvent) => {
+    if (isTouchDevice()) return;
     const el = cardRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -54,6 +57,7 @@ function ServiceCard({
   };
 
   const onLeave = () => {
+    setActive(false);
     if (cardRef.current) {
       cardRef.current.style.transform =
         "perspective(900px) rotateX(0) rotateY(0) scale3d(1,1,1)";
@@ -65,6 +69,8 @@ function ServiceCard({
       ref={cardRef}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
+      onMouseEnter={() => setActive(true)}
+      onClick={() => setActive((v) => !v)}
       data-cursor="hover"
       className={cn(
         "group relative overflow-hidden border border-cream/10 bg-mist/60 p-8 md:p-10",
@@ -72,8 +78,13 @@ function ServiceCard({
       )}
       style={{ transformStyle: "preserve-3d" }}
     >
-      {/* Preview on hover */}
-      <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+      {/* Preview on hover / tap */}
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-0 transition-opacity duration-500",
+          active ? "opacity-100" : "opacity-0 md:group-hover:opacity-100"
+        )}
+      >
         <Image
           src={preview}
           alt=""
@@ -85,13 +96,28 @@ function ServiceCard({
       </div>
 
       <div className="relative z-10">
-        <div className="service-icon mb-8 inline-flex h-12 w-12 items-center justify-center rounded-full border border-gold/30 text-gold transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-6">
+        <div
+          className={cn(
+            "service-icon mb-8 inline-flex h-12 w-12 items-center justify-center rounded-full border border-gold/30 text-gold transition-transform duration-500",
+            active && "-translate-y-1 rotate-6"
+          )}
+        >
           <Icon size={20} />
         </div>
-        <h3 className="font-heading text-2xl text-cream mb-4 tracking-tight transition-colors group-hover:text-white">
+        <h3
+          className={cn(
+            "font-heading text-2xl text-cream mb-4 tracking-tight transition-colors",
+            active && "text-white"
+          )}
+        >
           {title}
         </h3>
-        <p className="text-cream/65 leading-relaxed text-[15px] transition-colors group-hover:text-white/80">
+        <p
+          className={cn(
+            "text-cream/65 leading-relaxed text-[15px] transition-colors",
+            active && "text-white/80"
+          )}
+        >
           {description}
         </p>
       </div>

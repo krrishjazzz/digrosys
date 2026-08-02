@@ -6,6 +6,7 @@ import { ArrowDown } from "lucide-react";
 import { gsap, registerGSAP } from "@/lib/gsap";
 import { MagneticButton } from "@/components/ui/magnetic-button";
 import { Button } from "@/components/ui/button";
+import { isTouchDevice, scrollToId } from "@/lib/device";
 
 const LINE_1 = "WE DON'T CREATE CONTENT.";
 const LINE_2A = "WE BUILD";
@@ -59,9 +60,11 @@ export function Hero() {
         }
       );
 
-      // Subtle media parallax only — text stays locked for readability
+      // Subtle media parallax — desktop only (iOS touch parallax feels broken)
+      if (isTouchDevice()) return;
+
       const onMove = (e: MouseEvent) => {
-        if (!mediaRef.current || window.matchMedia("(pointer: coarse)").matches) return;
+        if (!mediaRef.current) return;
         const x = (e.clientX / window.innerWidth - 0.5) * 16;
         const y = (e.clientY / window.innerHeight - 0.5) * 12;
         gsap.to(mediaRef.current, {
@@ -81,7 +84,7 @@ export function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative flex min-h-screen items-center overflow-hidden bg-ink"
+      className="relative flex min-h-[100dvh] items-center overflow-hidden bg-ink"
     >
       {/* Quiet atmospheric wash — never crosses the type */}
       <div
@@ -116,20 +119,13 @@ export function Hero() {
           </div>
 
           <div className="hero-cta mt-12 flex flex-wrap items-center gap-4">
-            <MagneticButton
-              size="lg"
-              onClick={() =>
-                document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
-              }
-            >
+            <MagneticButton size="lg" onClick={() => scrollToId("contact")}>
               Book Discovery Call
             </MagneticButton>
             <Button
               variant="outline"
               size="lg"
-              onClick={() =>
-                document.getElementById("portfolio")?.scrollIntoView({ behavior: "smooth" })
-              }
+              onClick={() => scrollToId("portfolio")}
             >
               View Work
             </Button>
@@ -150,8 +146,7 @@ export function Hero() {
               className="object-cover"
               sizes="(max-width:1024px) 90vw, 40vw"
             />
-            {/* Soft edge so image feels premium, not a hard card */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white via-transparent to-white/20" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.22em] text-white/80 mb-1">

@@ -76,6 +76,8 @@
 /* Base */
 html {
   scroll-behavior: auto;
+  /* Prevent iOS rubber-band from breaking fixed headers */
+  overscroll-behavior-y: none;
 }
 
 html.lenis,
@@ -87,18 +89,45 @@ html.lenis body {
   scroll-behavior: auto !important;
 }
 
+/* Native scroll path for iPhone / touch */
+html.native-scroll {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--ink);
   color: var(--cream);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Prevents iOS Safari zoom-on-focus for form fields */
+input,
+textarea,
+select {
+  font-size: 16px;
 }
 
 body.has-custom-cursor,
-body.has-custom-cursor * {
+body.has-custom-cursor a,
+body.has-custom-cursor button,
+body.has-custom-cursor [data-cursor="hover"],
+body.has-custom-cursor input,
+body.has-custom-cursor textarea,
+body.has-custom-cursor select {
   cursor: none !important;
+}
+
+@media (pointer: coarse) {
+  body.has-custom-cursor,
+  body.has-custom-cursor * {
+    cursor: auto !important;
+  }
 }
 
 ::selection {
