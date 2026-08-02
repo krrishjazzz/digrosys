@@ -1,0 +1,38 @@
+[
+  {
+    "id": "01",
+    "title": "Discovery",
+    "description": "Deep dive into brand, audience, funnel, and competitive landscape. We find the leverage points others miss.",
+    "detail": "Workshops · Audits · Research"
+  },
+  {
+    "id": "02",
+    "title": "Strategy",
+    "description": "Positioning, messaging architecture, channel plan, and creative hypotheses mapped to commercial goals.",
+    "detail": "Roadmap · Messaging · Media Plan"
+  },
+  {
+    "id": "03",
+    "title": "Production",
+    "description": "Photography, film, and CGI executed at commercial quality — built for both brand and performance.",
+    "detail": "Shoot · Edit · CGI"
+  },
+  {
+    "id": "04",
+    "title": "Creative",
+    "description": "Assets engineered in formats that win attention across Meta, YouTube, web, and owned channels.",
+    "detail": "Ads · Films · Static · Motion"
+  },
+  {
+    "id": "05",
+    "title": "Campaign",
+    "description": "Launch, test, and iterate. Creative and media move together — every week compounds learning.",
+    "detail": "Launch · Test · Optimize"
+  },
+  {
+    "id": "06",
+    "title": "Scale",
+    "description": "Double down on winners. Expand into new formats, audiences, and markets with controlled CAC.",
+    "detail": "Scale · Expand · Compound"
+  }
+]

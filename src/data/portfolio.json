@@ -1,0 +1,92 @@
+[
+  {
+    "id": "p1",
+    "title": "Atelier Noir Campaign",
+    "category": "Fashion",
+    "client": "Atelier Noir",
+    "image": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1200&q=80",
+    "video": "https://cdn.coverr.co/videos/coverr-fashion-model-walking-on-runway-5725/1080p.mp4",
+    "year": "2025",
+    "slug": "atelier-noir"
+  },
+  {
+    "id": "p2",
+    "title": "Lumina Kitchen",
+    "category": "Food",
+    "client": "Lumina Foods",
+    "image": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80",
+    "video": null,
+    "year": "2025",
+    "slug": "lumina-kitchen"
+  },
+  {
+    "id": "p3",
+    "title": "Maison Orée",
+    "category": "Luxury",
+    "client": "Maison Orée",
+    "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1200&q=80",
+    "video": null,
+    "year": "2024",
+    "slug": "maison-oree"
+  },
+  {
+    "id": "p4",
+    "title": "Velvet Bloom",
+    "category": "Beauty",
+    "client": "Velvet Bloom",
+    "image": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1200&q=80",
+    "video": null,
+    "year": "2025",
+    "slug": "velvet-bloom"
+  },
+  {
+    "id": "p5",
+    "title": "Skyline Residences",
+    "category": "Real Estate",
+    "client": "Skyline Group",
+    "image": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80",
+    "video": null,
+    "year": "2024",
+    "slug": "skyline-residences"
+  },
+  {
+    "id": "p6",
+    "title": "Forge Daily",
+    "category": "D2C",
+    "client": "Forge",
+    "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&q=80",
+    "video": null,
+    "year": "2025",
+    "slug": "forge-daily"
+  },
+  {
+    "id": "p7",
+    "title": "Noir Runway SS25",
+    "category": "Fashion",
+    "client": "Noir Collective",
+    "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1200&q=80",
+    "video": null,
+    "year": "2025",
+    "slug": "noir-runway"
+  },
+  {
+    "id": "p8",
+    "title": "Harvest Table",
+    "category": "Food",
+    "client": "Harvest Co",
+    "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80",
+    "video": null,
+    "year": "2024",
+    "slug": "harvest-table"
+  },
+  {
+    "id": "p9",
+    "title": "Aurelia Watches",
+    "category": "Luxury",
+    "client": "Aurelia",
+    "image": "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=1200&q=80",
+    "video": null,
+    "year": "2025",
+    "slug": "aurelia-watches"
+  }
+]

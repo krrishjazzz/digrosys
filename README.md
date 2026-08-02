@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Digrosys — Premium Landing Page
+
+Award-caliber landing site for Digrosys: commercial production & performance marketing.
+
+## Stack
+
+- Next.js 15 (App Router)
+- React 19 + TypeScript
+- Tailwind CSS v4
+- Framer Motion · GSAP · Lenis
+- Three.js / React Three Fiber
+- Shadcn-style UI primitives
+- Lucide Icons
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command       | Description              |
+| ------------- | ------------------------ |
+| `npm run dev` | Local development server |
+| `npm run build` | Production build       |
+| `npm run start` | Start production server |
+| `npm run lint` | ESLint                   |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  app/                 # App Router entry, layout, global styles
+  components/
+    layout/            # Navbar, Footer, Lenis, cursor, loader, grain
+    sections/          # All 14 landing sections
+    three/             # R3F hero scene
+    shared/            # TextReveal, Marquee, counters
+    ui/                # Button, Accordion, form controls
+  data/                # CMS-ready JSON (portfolio, services, etc.)
+  hooks/               # Mouse / magnetic helpers
+  lib/                 # Utils + GSAP registration
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## CMS-ready Data
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Replace JSON under `src/data/` with Sanity / Supabase fetches later:
 
-## Deploy on Vercel
+- `portfolio.json`
+- `testimonials.json`
+- `services.json`
+- `clients.json`
+- `faqs.json`
+- `process.json`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Design System
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Surface `#FFFFFF`
+- Mist `#F6F6F4`
+- Type `#111111`
+- Gold `#B8922A`
+- Headings: General Sans (Fontshare)
+- Body: Inter
+
+## Notes
+
+- 3D hero is dynamically imported (`ssr: false`) for performance.
+- Lenis + GSAP ScrollTrigger power smooth scroll and timeline sections.
+- Custom cursor / spotlight degrade gracefully on touch devices.

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "t1",
+    "quote": "Digrosys didn't just make us look better — they rebuilt how we grow. Our ROAS tripled in one quarter.",
+    "name": "Ananya Mehta",
+    "role": "CMO",
+    "company": "Velvet Bloom",
+    "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80"
+  },
+  {
+    "id": "t2",
+    "quote": "The cinematic quality of their production paired with ruthless performance thinking is rare. Absolute partners.",
+    "name": "Rohan Kapoor",
+    "role": "Founder",
+    "company": "Forge Daily",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80"
+  },
+  {
+    "id": "t3",
+    "quote": "From brand film to paid campaigns, everything felt connected. Digrosys is a growth system, not an agency.",
+    "name": "Priya Nair",
+    "role": "Brand Director",
+    "company": "Maison Orée",
+    "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80"
+  },
+  {
+    "id": "t4",
+    "quote": "They moved faster than our internal team and delivered work that still converts months later.",
+    "name": "Arjun Sethi",
+    "role": "Head of Growth",
+    "company": "Skyline Group",
+    "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80"
+  },
+  {
+    "id": "t5",
+    "quote": "Strategy, production, media — one team owning the whole loop. That changed everything for us.",
+    "name": "Meera Joshi",
+    "role": "CEO",
+    "company": "Lumina Foods",
+    "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80"
+  }
+]
