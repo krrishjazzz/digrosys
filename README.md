@@ -21,6 +21,21 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Deploy on Vercel
+
+This project is ready to deploy on Vercel.
+
+1. Push this repository to GitHub.
+2. Import the repo in Vercel.
+3. Vercel will detect the Next.js app automatically.
+4. Deploy.
+
+If you want to connect it manually, use:
+
+- Framework Preset: Next.js
+- Build Command: `npm run build`
+- Output Directory: `.next`
+
 ## Scripts
 
 | Command       | Description              |
