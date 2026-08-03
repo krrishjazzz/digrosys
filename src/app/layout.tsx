@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "@/components/layout/Providers";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import "./globals.css";
 
 const inter = Inter({
@@ -12,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://digrosys.com"),
+  metadataBase: new URL("https://www.digrosys.com"),
   title: {
     default: "Digrosys — Commercial Production & Performance Marketing",
     template: "%s · Digrosys",
@@ -33,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://digrosys.com",
+    url: "https://www.digrosys.com",
     siteName: "Digrosys",
     title: "Digrosys — We Build Growth Systems",
     description:
@@ -63,6 +61,7 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -73,7 +72,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-ink">
       <head>
-        {/* General Sans via Fontshare — premium heading face */}
         <link
           href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap"
           rel="stylesheet"
@@ -87,11 +85,7 @@ export default function RootLayout({
           } as React.CSSProperties
         }
       >
-        <Providers>
-          <Navbar />
-          <main id="main">{children}</main>
-          <Footer />
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

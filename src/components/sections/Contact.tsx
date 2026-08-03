@@ -168,7 +168,9 @@ export function Contact() {
                   <p className="text-[11px] uppercase tracking-[0.2em] text-cream/50 mb-1">
                     Office
                   </p>
-                  <p className="text-cream/70">{contact.office}</p>
+                  <p className="text-cream/70">
+                    {contact.officeLines.join(", ")}
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
