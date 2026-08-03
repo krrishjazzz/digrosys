@@ -81,8 +81,14 @@ Replace JSON under `src/data/` with Sanity / Supabase fetches later:
 - Headings: General Sans (Fontshare)
 - Body: Inter
 
-## Notes
+## Enquiry form routing
 
-- 3D hero is dynamically imported (`ssr: false`) for performance.
-- Lenis + GSAP ScrollTrigger power smooth scroll and timeline sections.
-- Custom cursor / spotlight degrade gracefully on touch devices.
+Homepage contact form posts to `/api/enquiry` and fans out to:
+
+1. **Email** → `digrosys@gmail.com` (FormSubmit by default; Resend / Web3Forms optional)
+2. **WhatsApp** → opens chat to `8910481382` with the enquiry prefilled
+3. **Google Sheet** → optional webhook (`GOOGLE_SHEETS_WEBHOOK_URL`)
+
+See `.env.example` and `scripts/google-sheets-enquiry.gs`.
+
+**First FormSubmit use:** check digrosys@gmail.com for an activation email and click confirm.

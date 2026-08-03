@@ -6,8 +6,15 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MagneticButton } from "@/components/ui/magnetic-button";
+import { Button } from "@/components/ui/button";
 import { contact } from "@/lib/contact";
+import {
+  buildWhatsAppEnquiryUrl,
+  openWhatsApp,
+  sendEnquiryEmailClient,
+  sendEnquirySheetClient,
+  type EnquiryPayload,
+} from "@/lib/enquiry";
 
 const services = [
   "Commercial Photography",
@@ -26,13 +33,82 @@ const budgets = [
   "Not sure yet",
 ];
 
-/** SECTION 13 — Luxury contact form */
-export function Contact() {
-  const [submitted, setSubmitted] = useState(false);
+const SHEET_WEBHOOK =
+  process.env.NEXT_PUBLIC_GOOGLE_SHEETS_WEBHOOK_URL ||
+  "";
 
-  const onSubmit = (e: FormEvent) => {
+/** SECTION 13 — Contact form: WhatsApp + email + Google Sheet */
+export function Contact() {
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
+    "idle"
+  );
+  const [whatsappUrl, setWhatsappUrl] = useState("");
+  const [channelNote, setChannelNote] = useState("");
+
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    setStatus("loading");
+    setChannelNote("");
+
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const payload: EnquiryPayload = {
+      name: String(fd.get("name") || "").trim(),
+      company: String(fd.get("company") || "").trim(),
+      phone: String(fd.get("phone") || "").trim(),
+      email: String(fd.get("email") || "").trim(),
+      budget: String(fd.get("budget") || "").trim(),
+      services: String(fd.get("services") || "").trim(),
+      details: String(fd.get("details") || "").trim(),
+    };
+
+    // 1) WhatsApp FIRST — must stay in the click gesture or browsers block it
+    const wa = buildWhatsAppEnquiryUrl(payload);
+    setWhatsappUrl(wa);
+    openWhatsApp(wa);
+
+    const results = { email: false, sheet: false };
+
+    // 2) Email from browser (FormSubmit works better than server on localhost)
+    try {
+      await sendEnquiryEmailClient(payload);
+      results.email = true;
+    } catch (err) {
+      console.warn("[enquiry] email", err);
+    }
+
+    // 3) Google Sheet from browser
+    if (SHEET_WEBHOOK) {
+      try {
+        await sendEnquirySheetClient(payload, SHEET_WEBHOOK);
+        results.sheet = true;
+      } catch (err) {
+        console.warn("[enquiry] sheet", err);
+      }
+    }
+
+    // 4) Server backup (env-based Resend / sheet)
+    try {
+      await fetch("/api/enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.warn("[enquiry] api", err);
+    }
+
+    // Always treat as success if WhatsApp opened — user can still send from WA
+    const notes: string[] = [];
+    if (results.email) notes.push("email sent");
+    else notes.push("check spam / activate FormSubmit email once");
+    if (results.sheet) notes.push("saved to sheet");
+    else if (SHEET_WEBHOOK) notes.push("sheet may need Apps Script access = Anyone");
+    notes.push("WhatsApp opened with your details");
+
+    setChannelNote(notes.join(" · "));
+    setStatus("success");
+    form.reset();
   };
 
   return (
@@ -45,27 +121,52 @@ export function Contact() {
         />
 
         <div className="grid gap-16 lg:grid-cols-12 lg:gap-20">
-          {/* Form */}
           <form onSubmit={onSubmit} className="lg:col-span-7 space-y-8">
             <div className="grid gap-8 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" name="name" required placeholder="Your name" />
+                <Input
+                  id="name"
+                  name="name"
+                  required
+                  placeholder="Your name"
+                  autoComplete="name"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="company">Company</Label>
-                <Input id="company" name="company" required placeholder="Brand / company" />
+                <Input
+                  id="company"
+                  name="company"
+                  required
+                  placeholder="Brand / company"
+                  autoComplete="organization"
+                />
               </div>
             </div>
 
             <div className="grid gap-8 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" name="phone" type="tel" required placeholder="+91" />
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  required
+                  placeholder="+91"
+                  autoComplete="tel"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" required placeholder="you@brand.com" />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="you@brand.com"
+                  autoComplete="email"
+                />
               </div>
             </div>
 
@@ -120,19 +221,53 @@ export function Contact() {
               />
             </div>
 
-            <div className="pt-4">
-              <MagneticButton type="submit" size="lg" disabled={submitted}>
-                {submitted ? "Message Sent" : "Let's Build Something Great"}
-              </MagneticButton>
-              {submitted && (
-                <p className="mt-4 text-sm text-gold">
-                  Thank you — we&apos;ll be in touch shortly.
+            <div className="pt-4 space-y-4">
+              <Button type="submit" size="lg" disabled={status === "loading"}>
+                {status === "loading"
+                  ? "Sending…"
+                  : status === "success"
+                    ? "Sent — Submit Another"
+                    : "Let's Build Something Great"}
+              </Button>
+
+              {status === "success" && (
+                <div className="rounded-[16px] border border-gold/30 bg-mist p-5 space-y-3">
+                  <p className="text-sm text-cream font-medium">
+                    Enquiry submitted.
+                  </p>
+                  <p className="text-sm text-cream/60">{channelNote}</p>
+                  <a
+                    href={whatsappUrl || contact.whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 text-[12px] font-medium uppercase tracking-[0.12em] text-white"
+                  >
+                    <MessageCircle size={16} />
+                    Open WhatsApp again
+                  </a>
+                  <p className="text-xs text-cream/45">
+                    First-time email: check <strong>digrosys@gmail.com</strong> for a
+                    FormSubmit activation link and click it once.
+                  </p>
+                </div>
+              )}
+
+              {status === "error" && (
+                <p className="text-sm text-red-600">
+                  Something went wrong.{" "}
+                  <a
+                    href={whatsappUrl || contact.whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    Message on WhatsApp
+                  </a>
                 </p>
               )}
             </div>
           </form>
 
-          {/* Right side info */}
           <aside className="lg:col-span-5 space-y-10">
             <div className="relative overflow-hidden border border-cream/10 p-8 md:p-10">
               <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gold/10 blur-2xl" />
@@ -141,7 +276,8 @@ export function Contact() {
                 Book a Discovery Call
               </h3>
               <p className="text-cream/65 leading-relaxed mb-6">
-                30 minutes. No pitch deck theater. A clear look at where growth is leaking — and how we fix it.
+                30 minutes. No pitch deck theater. A clear look at where growth is
+                leaking — and how we fix it.
               </p>
               <div className="flex flex-wrap gap-4">
                 <a
@@ -214,42 +350,6 @@ export function Contact() {
                     className="text-cream/70 hover:text-gold transition-colors"
                   >
                     {contact.whatsapp}
-                  </a>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="mt-1 w-[18px] shrink-0 text-center text-gold text-xs font-medium">
-                  IG
-                </div>
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-cream/50 mb-1">
-                    Instagram
-                  </p>
-                  <a
-                    href={contact.instagramHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-cream/70 hover:text-gold transition-colors"
-                  >
-                    {contact.instagram}
-                  </a>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="mt-1 w-[18px] shrink-0 text-center text-gold text-xs font-medium">
-                  FB
-                </div>
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-cream/50 mb-1">
-                    Facebook
-                  </p>
-                  <a
-                    href={contact.facebookHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-cream/70 hover:text-gold transition-colors"
-                  >
-                    {contact.facebook}
                   </a>
                 </div>
               </div>
