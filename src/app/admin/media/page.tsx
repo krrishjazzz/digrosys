@@ -231,7 +231,7 @@ export default function AdminMediaPage() {
                 sources: ["local", "url", "camera"],
                 resourceType: "auto",
                 tags: [uploadCategory],
-                context: `category=${uploadCategory}`,
+                context: { category: uploadCategory },
                 clientAllowedFormats: [
                   "jpg",
                   "jpeg",
