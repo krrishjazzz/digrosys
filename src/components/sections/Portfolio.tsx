@@ -8,9 +8,25 @@ import { SectionHeading } from "@/components/shared/SectionHeading";
 import portfolio from "@/data/portfolio.json";
 import { cn } from "@/lib/utils";
 
-const filters = ["All", "Fashion", "Food", "Luxury", "Beauty", "Real Estate", "D2C"] as const;
+const filters = [
+  "All",
+  "Fashion",
+  "Food",
+  "Luxury",
+  "Beauty",
+  "Real Estate",
+  "D2C",
+  "Work",
+] as const;
 
-type PortfolioItem = (typeof portfolio)[number];
+type PortfolioItem = {
+  id: string;
+  title: string;
+  category: string;
+  image: string;
+  video: string | null;
+  year: string;
+};
 
 function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -74,12 +90,13 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
             )}
           />
         )}
-        {/* Always readable on mobile; hover/tap enrich on desktop */}
         <div
           className={cn(
             "absolute inset-0 transition-colors duration-500",
             "bg-gradient-to-t from-black/70 via-black/20 to-transparent",
-            active ? "md:bg-black/55 md:via-black/55" : "md:bg-black/0 md:via-transparent md:group-hover:bg-black/55"
+            active
+              ? "md:bg-black/55 md:via-black/55"
+              : "md:bg-black/0 md:via-transparent md:group-hover:bg-black/55"
           )}
         />
 
@@ -87,7 +104,8 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
           className={cn(
             "absolute inset-0 flex flex-col justify-end p-5 md:p-6 transition-all duration-500",
             "opacity-100 translate-y-0",
-            !active && "md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0"
+            !active &&
+              "md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0"
           )}
         >
           <p className="text-[10px] uppercase tracking-[0.22em] text-gold mb-2">
@@ -97,7 +115,7 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
             {item.title}
           </h3>
           <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white border-b border-gold pb-1 w-fit">
-            Case Study <ArrowUpRight size={14} />
+            View <ArrowUpRight size={14} />
           </span>
         </div>
       </div>
@@ -105,18 +123,74 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
   );
 }
 
-/** SECTION 5 — Masonry portfolio with filters */
+function cloudinaryThumb(url: string, type: "image" | "video") {
+  if (type !== "video") return url;
+  // Cloudinary video poster frame
+  return url
+    .replace("/video/upload/", "/video/upload/so_0,f_jpg/")
+    .replace(/\.(mp4|mov|webm)$/i, ".jpg");
+}
+
+/** SECTION 5 — Portfolio (Cloudinary uploads + JSON fallback) */
 export function Portfolio() {
   const [active, setActive] = useState<(typeof filters)[number]>("All");
+  const [remote, setRemote] = useState<PortfolioItem[] | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/media", { cache: "no-store" });
+        const json = (await res.json()) as {
+          items?: Array<{
+            id: string;
+            title: string;
+            category: string;
+            url: string;
+            type: "image" | "video";
+            createdAt: string;
+          }>;
+        };
+        if (cancelled || !json.items?.length) return;
+
+        const mapped: PortfolioItem[] = json.items.map((item) => ({
+          id: item.id,
+          title: item.title,
+          category: item.category || "Work",
+          image:
+            item.type === "video"
+              ? cloudinaryThumb(item.url, "video")
+              : item.url,
+          video: item.type === "video" ? item.url : null,
+          year: item.createdAt
+            ? new Date(item.createdAt).getFullYear().toString()
+            : new Date().getFullYear().toString(),
+        }));
+        setRemote(mapped);
+      } catch {
+        /* keep JSON fallback */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const source = remote && remote.length > 0 ? remote : portfolio;
 
   const items = useMemo(
     () =>
       active === "All"
-        ? portfolio
-        : portfolio.filter((p) => p.category === active),
-    [active]
+        ? source
+        : source.filter((p) => p.category === active),
+    [active, source]
   );
+
+  const visibleFilters = useMemo(() => {
+    const cats = new Set(source.map((p) => p.category));
+    return filters.filter((f) => f === "All" || cats.has(f));
+  }, [source]);
 
   useEffect(() => {
     registerGSAP();
@@ -150,9 +224,8 @@ export function Portfolio() {
           description="Campaigns engineered for attention and conversion."
         />
 
-        {/* Filters — horizontal scroll on small screens */}
         <div className="-mx-6 mb-12 flex gap-2 overflow-x-auto px-6 pb-2 md:mx-0 md:flex-wrap md:gap-3 md:overflow-visible md:px-0 md:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {filters.map((filter) => (
+          {visibleFilters.map((filter) => (
             <button
               key={filter}
               type="button"
@@ -169,7 +242,6 @@ export function Portfolio() {
           ))}
         </div>
 
-        {/* Masonry-ish grid */}
         <div
           ref={gridRef}
           className="columns-1 gap-4 md:columns-2 xl:columns-3 space-y-4"

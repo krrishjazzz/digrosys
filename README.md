@@ -81,14 +81,13 @@ Replace JSON under `src/data/` with Sanity / Supabase fetches later:
 - Headings: General Sans (Fontshare)
 - Body: Inter
 
-## Enquiry form routing
+## Cloudinary media uploads
 
-Homepage contact form posts to `/api/enquiry` and fans out to:
+1. Add Cloudinary keys to `.env.local` (see `.env.example`)
+2. Set `ADMIN_PASSWORD`
+3. Open [http://localhost:3000/admin/media](http://localhost:3000/admin/media)
+4. Login → **Upload photos / videos**
+5. Assets land in folder `digrosys/portfolio` and appear on the homepage Portfolio
 
-1. **Email** → `digrosys@gmail.com` (FormSubmit by default; Resend / Web3Forms optional)
-2. **WhatsApp** → opens chat to `8910481382` with the enquiry prefilled
-3. **Google Sheet** → optional webhook (`GOOGLE_SHEETS_WEBHOOK_URL`)
+**Security:** Never commit `CLOUDINARY_API_SECRET`. Rotate it if it was shared publicly.
 
-See `.env.example` and `scripts/google-sheets-enquiry.gs`.
-
-**First FormSubmit use:** check digrosys@gmail.com for an activation email and click confirm.

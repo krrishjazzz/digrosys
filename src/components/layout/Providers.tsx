@@ -2,22 +2,21 @@
 
 import { usePathname } from "next/navigation";
 import { SmoothScroll } from "./SmoothScroll";
-import { CustomCursor } from "./CustomCursor";
 import { PageLoader } from "./PageLoader";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isConnect = pathname?.startsWith("/connect");
+  const isAdmin = pathname?.startsWith("/admin");
 
-  // Digital business card: keep it light — no loader, cursor, or Lenis
-  if (isConnect) {
+  // Connect + Admin: keep light — no loader or Lenis
+  if (isConnect || isAdmin) {
     return <>{children}</>;
   }
 
   return (
     <SmoothScroll>
       <PageLoader />
-      <CustomCursor />
       {children}
     </SmoothScroll>
   );

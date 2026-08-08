@@ -113,23 +113,6 @@ select {
   font-size: 16px;
 }
 
-body.has-custom-cursor,
-body.has-custom-cursor a,
-body.has-custom-cursor button,
-body.has-custom-cursor [data-cursor="hover"],
-body.has-custom-cursor input,
-body.has-custom-cursor textarea,
-body.has-custom-cursor select {
-  cursor: none !important;
-}
-
-@media (pointer: coarse) {
-  body.has-custom-cursor,
-  body.has-custom-cursor * {
-    cursor: auto !important;
-  }
-}
-
 ::selection {
   background: rgba(184, 146, 42, 0.28);
   color: var(--cream);
