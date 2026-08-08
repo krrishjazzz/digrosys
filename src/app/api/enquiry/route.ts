@@ -6,11 +6,13 @@ import {
   isValidEnquiry,
   type EnquiryPayload,
 } from "@/lib/enquiry";
+import { addLead } from "@/lib/leads";
 
 export const runtime = "nodejs";
 
 /**
  * Enquiry intake — fans out to:
+ * 0) Lead dashboard store (data/leads.json)
  * 1) Email (Resend if configured, else FormSubmit → digrosys@gmail.com)
  * 2) Google Sheet (GOOGLE_SHEETS_WEBHOOK_URL)
  * 3) WhatsApp deep-link (always returned for client open)
@@ -34,10 +36,22 @@ export async function POST(request: Request) {
   const data = body;
   const timestamp = new Date().toISOString();
   const channels = {
+    lead: false,
     email: false,
     sheet: false,
   };
   const errors: string[] = [];
+
+  // —— 0. Save to lead tracker (always) ——
+  try {
+    await addLead({
+      ...data,
+      source: data.source || "website",
+    });
+    channels.lead = true;
+  } catch (err) {
+    errors.push(err instanceof Error ? err.message : "Lead save failed");
+  }
 
   // —— 1. Email ——
   try {
@@ -121,7 +135,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           timestamp,
           ...data,
-          source: "digrosys.com/contact",
+          source: data.source || "website",
         }),
       });
       // Apps Script often returns 200 even when writing succeeds after redirect
@@ -132,17 +146,13 @@ export async function POST(request: Request) {
     } catch (err) {
       errors.push(err instanceof Error ? err.message : "Sheet write failed");
     }
-  } else {
-    errors.push(
-      "GOOGLE_SHEETS_WEBHOOK_URL is not set — deploy scripts/google-sheets-enquiry.gs and add the /exec URL to .env.local"
-    );
   }
 
   // —— 3. WhatsApp (always) ——
   const whatsappUrl = buildWhatsAppEnquiryUrl(data, contact.phoneRaw.replace("+", ""));
 
-  // Succeed if at least email or sheet worked — WhatsApp is always available as backup
-  if (!channels.email && !channels.sheet) {
+  // Lead save alone is enough for success; WA always available
+  if (!channels.lead && !channels.email && !channels.sheet) {
     return NextResponse.json(
       {
         ok: true,
@@ -150,7 +160,7 @@ export async function POST(request: Request) {
         channels,
         whatsappUrl,
         warning:
-          "Email/sheet unavailable — open WhatsApp to send this enquiry directly.",
+          "Lead store unavailable — open WhatsApp to send this enquiry directly.",
         errors,
       },
       { status: 200 }

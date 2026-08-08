@@ -62,16 +62,59 @@ export async function GET() {
   }
 }
 
-/** Delete a Cloudinary asset (admin session cookie or password header) */
-export async function DELETE(request: Request) {
+function isAdminAuthed(request: Request) {
   const password = request.headers.get("x-admin-password");
   const cookie = request.headers.get("cookie") || "";
   const hasSession = cookie.includes("digrosys_admin=1");
-  const authed =
+  return (
     hasSession ||
-    Boolean(password && password === process.env.ADMIN_PASSWORD);
+    Boolean(password && password === process.env.ADMIN_PASSWORD)
+  );
+}
 
-  if (!authed) {
+/** Update category (and optional title) on a Cloudinary asset */
+export async function PATCH(request: Request) {
+  if (!isAdminAuthed(request)) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!isCloudinaryConfigured()) {
+    return NextResponse.json({ ok: false, error: "Not configured" }, { status: 500 });
+  }
+
+  const body = (await request.json()) as {
+    publicId: string;
+    resourceType?: "image" | "video";
+    category?: string;
+    title?: string;
+  };
+
+  if (!body.publicId || !body.category?.trim()) {
+    return NextResponse.json(
+      { ok: false, error: "Missing publicId or category" },
+      { status: 400 }
+    );
+  }
+
+  const category = body.category.trim();
+  const contextParts = [`category=${category}`];
+  if (body.title?.trim()) {
+    contextParts.push(`title=${body.title.trim()}`);
+  }
+
+  const cloudinary = getCloudinary();
+  await cloudinary.api.update(body.publicId, {
+    resource_type: body.resourceType || "image",
+    context: contextParts.join("|"),
+    tags: [category],
+  });
+
+  return NextResponse.json({ ok: true, category });
+}
+
+/** Delete a Cloudinary asset (admin session cookie or password header) */
+export async function DELETE(request: Request) {
+  if (!isAdminAuthed(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 

@@ -6,18 +6,11 @@ import { ArrowUpRight } from "lucide-react";
 import { gsap, registerGSAP } from "@/lib/gsap";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import portfolio from "@/data/portfolio.json";
+import {
+  PORTFOLIO_FILTERS,
+  PORTFOLIO_PREVIEW_COUNT,
+} from "@/lib/portfolio-categories";
 import { cn } from "@/lib/utils";
-
-const filters = [
-  "All",
-  "Fashion",
-  "Food",
-  "Luxury",
-  "Beauty",
-  "Real Estate",
-  "D2C",
-  "Work",
-] as const;
 
 type PortfolioItem = {
   id: string;
@@ -133,7 +126,9 @@ function cloudinaryThumb(url: string, type: "image" | "video") {
 
 /** SECTION 5 — Portfolio (Cloudinary uploads + JSON fallback) */
 export function Portfolio() {
-  const [active, setActive] = useState<(typeof filters)[number]>("All");
+  const [active, setActive] =
+    useState<(typeof PORTFOLIO_FILTERS)[number]>("All");
+  const [showAll, setShowAll] = useState(false);
   const [remote, setRemote] = useState<PortfolioItem[] | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -179,7 +174,7 @@ export function Portfolio() {
 
   const source = remote && remote.length > 0 ? remote : portfolio;
 
-  const items = useMemo(
+  const filtered = useMemo(
     () =>
       active === "All"
         ? source
@@ -187,9 +182,17 @@ export function Portfolio() {
     [active, source]
   );
 
+  const items = useMemo(
+    () =>
+      showAll ? filtered : filtered.slice(0, PORTFOLIO_PREVIEW_COUNT),
+    [filtered, showAll]
+  );
+
+  const hasMore = filtered.length > PORTFOLIO_PREVIEW_COUNT;
+
   const visibleFilters = useMemo(() => {
     const cats = new Set(source.map((p) => p.category));
-    return filters.filter((f) => f === "All" || cats.has(f));
+    return PORTFOLIO_FILTERS.filter((f) => f === "All" || cats.has(f));
   }, [source]);
 
   useEffect(() => {
@@ -229,7 +232,10 @@ export function Portfolio() {
             <button
               key={filter}
               type="button"
-              onClick={() => setActive(filter)}
+              onClick={() => {
+                setActive(filter);
+                setShowAll(false);
+              }}
               className={cn(
                 "shrink-0 rounded-full border px-5 py-2.5 min-h-11 text-[11px] uppercase tracking-[0.18em] transition-all duration-300",
                 active === filter
@@ -250,6 +256,20 @@ export function Portfolio() {
             <PortfolioCard key={item.id} item={item} index={i} />
           ))}
         </div>
+
+        {hasMore && (
+          <div className="mt-12 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              className="inline-flex min-h-12 items-center rounded-full border border-cream/20 px-8 text-[11px] uppercase tracking-[0.18em] text-cream/80 transition-colors hover:border-gold hover:text-gold"
+            >
+              {showAll
+                ? "Show less"
+                : `Show all (${filtered.length})`}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

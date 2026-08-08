@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { contact } from "@/lib/contact";
 import {
   buildWhatsAppEnquiryUrl,
+  isMobileDevice,
   openWhatsApp,
   sendEnquiryEmailClient,
   sendEnquirySheetClient,
@@ -60,55 +61,57 @@ export function Contact() {
       budget: String(fd.get("budget") || "").trim(),
       services: String(fd.get("services") || "").trim(),
       details: String(fd.get("details") || "").trim(),
+      source: "website",
     };
 
-    // 1) WhatsApp FIRST — must stay in the click gesture or browsers block it
     const wa = buildWhatsAppEnquiryUrl(payload);
     setWhatsappUrl(wa);
+
+    // Save lead with keepalive so it still completes if we navigate to WhatsApp
+    try {
+      void fetch("/api/enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      });
+    } catch {
+      /* ignore */
+    }
+
+    // Open WhatsApp immediately (must stay in submit click).
+    // Mobile: goes to WhatsApp with message prefilled.
+    // Desktop: new tab. WhatsApp never auto-sends — user must tap Send.
     openWhatsApp(wa);
 
-    const results = { email: false, sheet: false };
+    if (isMobileDevice()) {
+      void sendEnquiryEmailClient(payload).catch(() => {});
+      if (SHEET_WEBHOOK) {
+        void sendEnquirySheetClient(payload, SHEET_WEBHOOK).catch(() => {});
+      }
+      setStatus("success");
+      setChannelNote("WhatsApp opened — tap Send to deliver your enquiry.");
+      return;
+    }
 
-    // 2) Email from browser (FormSubmit works better than server on localhost)
+    setChannelNote(
+      "WhatsApp opened with your enquiry prefilled — tap Send in WhatsApp to deliver it."
+    );
+    setStatus("success");
+    form.reset();
+
     try {
       await sendEnquiryEmailClient(payload);
-      results.email = true;
     } catch (err) {
       console.warn("[enquiry] email", err);
     }
-
-    // 3) Google Sheet from browser
     if (SHEET_WEBHOOK) {
       try {
         await sendEnquirySheetClient(payload, SHEET_WEBHOOK);
-        results.sheet = true;
       } catch (err) {
         console.warn("[enquiry] sheet", err);
       }
     }
-
-    // 4) Server backup (env-based Resend / sheet)
-    try {
-      await fetch("/api/enquiry", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } catch (err) {
-      console.warn("[enquiry] api", err);
-    }
-
-    // Always treat as success if WhatsApp opened — user can still send from WA
-    const notes: string[] = [];
-    if (results.email) notes.push("email sent");
-    else notes.push("check spam / activate FormSubmit email once");
-    if (results.sheet) notes.push("saved to sheet");
-    else if (SHEET_WEBHOOK) notes.push("sheet may need Apps Script access = Anyone");
-    notes.push("WhatsApp opened with your details");
-
-    setChannelNote(notes.join(" · "));
-    setStatus("success");
-    form.reset();
   };
 
   return (
@@ -233,21 +236,21 @@ export function Contact() {
               {status === "success" && (
                 <div className="rounded-[16px] border border-gold/30 bg-mist p-5 space-y-3">
                   <p className="text-sm text-cream font-medium">
-                    Enquiry submitted.
+                    Enquiry saved.
                   </p>
                   <p className="text-sm text-cream/60">{channelNote}</p>
                   <a
                     href={whatsappUrl || contact.whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 text-[12px] font-medium uppercase tracking-[0.12em] text-white"
+                    className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 text-[12px] font-medium uppercase tracking-[0.12em] text-white"
                   >
                     <MessageCircle size={16} />
-                    Open WhatsApp again
+                    Open WhatsApp &amp; Send
                   </a>
                   <p className="text-xs text-cream/45">
-                    First-time email: check <strong>digrosys@gmail.com</strong> for a
-                    FormSubmit activation link and click it once.
+                    WhatsApp cannot auto-send for security — open the chat and tap{" "}
+                    <strong>Send</strong>.
                   </p>
                 </div>
               )}

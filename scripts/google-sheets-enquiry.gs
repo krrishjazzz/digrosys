@@ -32,6 +32,7 @@ var HEADERS = [
   "Services",
   "Details",
   "Source",
+  "Status",
 ];
 
 function getSheet_() {
@@ -42,7 +43,8 @@ function getSheet_() {
 function ensureHeaders_(sheet) {
   var first = sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0];
   var empty = !first[0];
-  if (empty) {
+  var incomplete = first.join("|") !== HEADERS.join("|");
+  if (empty || incomplete) {
     sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
     sheet.setFrozenRows(1);
     sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight("bold");
@@ -62,6 +64,7 @@ function appendEnquiry_(data) {
     data.services || "",
     data.details || "",
     data.source || "website",
+    data.status || "new",
   ]);
 }
 
@@ -98,6 +101,7 @@ function testAppend() {
     services: "Full Growth System",
     details: "Test row from Apps Script — safe to delete.",
     source: "script-test",
+    status: "new",
   });
 }
 

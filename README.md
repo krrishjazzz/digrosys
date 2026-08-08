@@ -91,3 +91,12 @@ Replace JSON under `src/data/` with Sanity / Supabase fetches later:
 
 **Security:** Never commit `CLOUDINARY_API_SECRET`. Rotate it if it was shared publicly.
 
+## Lead tracker
+
+Password-protected dashboard for enquiries:
+
+- [http://localhost:3000/admin/leads](http://localhost:3000/admin/leads)
+- Tabs: **Website enquiries** · **Connect card** · **Other leads**
+- Same `ADMIN_PASSWORD` as media admin
+- Website contact form saves here automatically (`data/leads.json`)
+

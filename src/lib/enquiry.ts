@@ -6,6 +6,7 @@ export type EnquiryPayload = {
   budget: string;
   services: string;
   details: string;
+  source?: "website" | "connect" | "other";
 };
 
 export function buildWhatsAppEnquiryUrl(
@@ -26,19 +27,33 @@ export function buildWhatsAppEnquiryUrl(
     data.details,
   ].join("\n");
 
-  return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  // api.whatsapp.com is more reliable than wa.me on some browsers/devices
+  return `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
 }
 
-/** Open WhatsApp during the user click (avoids popup blockers). */
-export function openWhatsApp(url: string) {
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.target = "_blank";
-  anchor.rel = "noopener noreferrer";
-  anchor.style.display = "none";
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
+export function isMobileDevice() {
+  if (typeof navigator === "undefined") return false;
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
+
+/**
+ * Open WhatsApp with prefilled enquiry.
+ * Note: WhatsApp never auto-sends — user must tap Send. We only open + prefill.
+ * Returns false if a popup was blocked (desktop).
+ */
+export function openWhatsApp(url: string): boolean {
+  if (isMobileDevice()) {
+    // Same-tab open is the only reliable path on iPhone/Android
+    window.location.href = url;
+    return true;
+  }
+
+  const popup = window.open(url, "_blank", "noopener,noreferrer");
+  if (popup) return true;
+
+  // Popup blocked — try top-level navigation as last resort
+  window.location.href = url;
+  return true;
 }
 
 export function buildEnquiryEmailHtml(data: EnquiryPayload) {
